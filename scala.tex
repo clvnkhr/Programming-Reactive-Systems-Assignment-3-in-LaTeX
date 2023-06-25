@@ -160,13 +160,13 @@ Whenever the primary replica receives an update operation (either Insert or Remo
 A positive \mintinline{scala}!OperationAck! reply must be sent as soon as
 
 \begin{enumerate}
-	\item the change in question has been handed down to the Persistence module (provided) \textbf{and} a corresponding acknowledgement has been received from it (the persistence module is "flaky"—it fails randomly from time to time—and it is your task to keep it alive while retrying unacknowledged persistence operations until they succeed, see the \hyperref[ss:persistence]{persistence} section for details)
+	\item the change in question has been handed down to the Persistence module (provided) \textbf{and} a corresponding acknowledgement has been received from it (the persistence module is ``flaky''—it fails randomly from time to time—and it is your task to keep it alive while retrying unacknowledged persistence operations until they succeed, see the \hyperref[ss:persistence]{persistence} section for details)
 	\item replication of the change in question has been initiated \textbf{and} all of the secondary replicas have acknowledged the replication of the update.
 \end{enumerate}
 
 If replicas leave the cluster, which is signalled by sending a new Replicas message to the primary, then outstanding acknowledgements of these replicas must be waived. This can lead to the generation of an OperationAck triggered indirectly by the Replicas message.
 
-A negative \mintinline{scala}!OperationFailed! reply must be sent if the conditions for sending an OperationAck are not met within the 1 second maximum response time.
+A negative \mintinline{scala}!OperationFailed! reply must be sent if the conditions for sending an \mintinline{scala}!OperationAck! are not met within the 1 second maximum response time.
 
 \subsection{Consistency in the case of failed replication or persistence}
 
@@ -176,7 +176,7 @@ One consequence of this restriction is that each replica uses this  freedom to i
 
 \subsection{Which value to expect while an update is outstanding?}
 
-Sending an update request for a key followed by a Get request for the same key without waiting for the acknowledgement of the update is allowed to return either the old or the new value (or a third value if another client concurrently updates the same key). An example, assuming only this one client at this time:
+Sending an update request for a key followed by a \mintinline{scala}!Get! request for the same key without waiting for the acknowledgement of the update is allowed to return either the old or the new value (or a third value if another client concurrently updates the same key). An example, assuming only this one client at this time:
 
 \begin{minted}{scala}
 Insert("key1", "a")
@@ -184,7 +184,7 @@ Insert("key1", "a")
 Insert("key1", "b") Get("key1") 
 \end{minted}
 
-The replies for the last two requests may arrive in any order, and the reply for the Get request may either contain \mintinline{scala}!"a"! or \mintinline{scala}|"b"|.
+The replies for the last two requests may arrive in any order, and the reply for the \mintinline{scala}!Get! request may either contain \mintinline{scala}!"a"! or \mintinline{scala}|"b"|.
 
 \section{The Arbiter}\label{s:arbiter}
 
@@ -248,7 +248,7 @@ The second pair is used by the replicator when communicating with its partner re
     \item \mintinline{scala}{SnapshotAck(key, seq)} is the reply sent by the secondary replica to the \mintinline{scala}!Replicator! as soon as the update is persisted locally by the secondary replica. The replica might never send this reply in case it is unable to persist the update. The sender of the \mintinline{scala}!SnapshotAck! message shall be the secondary \mintinline{scala}!Replica!. The acknowledgement is sent immediately for requests whose sequence number is less than the next expected number. The expected number is set to the greater of the previously expected number and the sequence number just acknowledged, incremented by one
 \end{itemize}
 
-You should note that the \mintinline{scala}!Replicator! may handle multiple snapshots of a given key in parallel (i.e. their replication has been initiated but not yet completed). It is allowed—but not required— to batch changes before sending them to the secondary replica, provided that each replication request is acknowledged properly and in the right sequence when complete. An example:
+You should note that the \mintinline{scala}!Replicator! may handle multiple snapshots of a given key in parallel (i.e. their replication has been initiated but not yet completed). It is allowed—but not required—to batch changes before sending them to the secondary replica, provided that each replication request is acknowledged properly and in the right sequence when complete. An example:
 
 \begin{minted}{scala}
 Replicate("a_key", Some("value1"), id1) 
