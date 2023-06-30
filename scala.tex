@@ -193,7 +193,7 @@ The Arbiter is an external subsystem that will be provided for use. The Arbiter 
 \begin{itemize}
     \item New replicas must first send a \mintinline{scala}!Join! message to the Arbiter signaling that they are ready to be used.
     \item The \mintinline{scala}!Join! message will be answered by either a \mintinline{scala}!JoinedPrimary! or \mintinline{scala}!JoinedSecondary! message indicating the role of the new node; the answer will be sent to the sender of the \mintinline{scala}!Join! message. The first node to join will get the primary role, other subsequent nodes are assigned the secondary role.
-    \item The arbiter will send a Replicas message to the primary replica whenever it receives the \mintinline{scala}!Join! message; for this reason the sender of the \mintinline{scala}!Join! message must be the replica Actor itself. This message contains the set of available replica nodes including the primary and all the secondaries.
+    \item The arbiter will send a \mintinline{scala}!Replicas! message to the primary replica whenever it receives the \mintinline{scala}!Join! message; for this reason the sender of the \mintinline{scala}!Join! message must be the replica Actor itself. This message contains the set of available replica nodes including the primary and all the secondaries.
 \end{itemize}
 
 All messages sent by the Arbiter will have the Arbiter as their sender.
@@ -228,7 +228,7 @@ The secondary replicas must provide the following features:
 
 Apart from providing the KV protocol for external clients, you must implement another protocol involving the primary and secondary replicas and some newly introduced helper nodes. The KV store will use this protocol to synchronize its state between nodes.
 
-When a new replica joins the system, the primary receives a new Replicas message and must allocate a new actor of type \mintinline{scala}!Replicator! for the new replica; when a replica leaves the system its corresponding \mintinline{scala}!Replicator! must be terminated. The role of this \mintinline{scala}!Replicator! actor is to accept \textbf{update events}, and propagate the changes to its corresponding replica (i.e. there is exactly one \mintinline{scala}!Replicator! per secondary replica). \textbf{Also, notice that at creation time of the \mintinline{scala}!Replicator!, the primary must forward update events for every key-value pair it currently holds to this \mintinline{scala}!Replicator!.}
+When a new replica joins the system, the primary receives a new \mintinline{scala}!Replicas! message and must allocate a new actor of type \mintinline{scala}!Replicator! for the new replica; when a replica leaves the system its corresponding \mintinline{scala}!Replicator! must be terminated. The role of this \mintinline{scala}!Replicator! actor is to accept \textbf{update events}, and propagate the changes to its corresponding replica (i.e. there is exactly one \mintinline{scala}!Replicator! per secondary replica). \textbf{Also, notice that at creation time of the \mintinline{scala}!Replicator!, the primary must forward update events for every key-value pair it currently holds to this \mintinline{scala}!Replicator!.}
 
 Your task for this protocol will be to provide an \mintinline{scala}!Actor! representing a \mintinline{scala}!Replicator!. Its declaration is:
 
@@ -254,13 +254,13 @@ You should note that the \mintinline{scala}!Replicator! may handle multiple snap
 Replicate("a_key", Some("value1"), id1) 
 Replicate("a_key", Some("value2"), id2) 
 \end{minted}
-might have reached the \mintinline{scala}!Replicator! before it got around to send a \mintinline{scala}!Snapshot! message for \mintinline{scala}{a_key} to its replica. These two messages could then result in only the following replication message
+might have reached the \mintinline{scala}!Replicator! before it got around to send a \mintinline{scala}!Snapshot! message for \mintinline{scala}!"a_key"! to its replica. These two messages could then result in only the following replication message
 
 \begin{minted}{scala}
 Snapshot("a_key", Some("value2"), seq) 
 \end{minted}
 
-skipping the state where \mintinline{scala}{a_key} contains the value \mintinline{scala}{value1}.
+skipping the state where \mintinline{scala}!"a_key"! contains the value \mintinline{scala}!"value1"!.
 
 Since the replication protocol is meant to symbolize remote replication you must consider the case that either a Snapshot message or its corresponding \mintinline{scala}!SnapshotAck! message is lost on the way. Therefore the \mintinline{scala}!Replicator!  must make sure to periodically retransmit all unacknowledged changes.  For grading purposes it is assumed that this happens roughly every 100  milliseconds. To allow for batching (see above) we will assume that a  lost \mintinline{scala}!Snapshot! message will lead to a resend at most 200 milliseconds after the \mintinline{scala}!Replicate! request was received (again, the \mintinline{scala}!ActorSystem!’s scheduler service is considered precise enough for this purpose).
 
