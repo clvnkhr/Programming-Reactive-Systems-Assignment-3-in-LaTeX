@@ -46,7 +46,7 @@
 \textbf{NOTE:} This assignment is two weeks long, there will  be no new assignment next week. We recommend not rushing this exercise  and solving it in several steps as you see fit.
 
 To get started,
-download the \href{https://moocs.scala-lang.org/~dockermoocs/handouts/scala-3/kvstore.zip}{kvstore.zip}
+download the \href{https://moocs.scala-lang.org/~dockermoocs/handouts/scala-3/kvstore.zip}{\texttt{kvstore.zip}}
 handout archive file and extract it somewhere on your machine.
 
 \section{Introduction}\label{s:intro}
@@ -155,7 +155,7 @@ Eventual consistency means that given enough time, all replicas settle on the sa
 
 The previous two sections prescribed possible transitions that the clients are allowed to experience on key updates. In this section, we will see what guarantees acknowledgement messages must obey (on the primary replica).
 
-Whenever the primary replica receives an update operation (either Insert or Remove) it must reply with an \mintinline{scala}!OperationAck(id)! or \mintinline{scala}!OperationFailed(id)! message, to be sent at most 1 second after the update command was processed (the \mintinline{scala}!ActorSystem!’s timer resolution is deemed to be sufficiently precise for this).
+Whenever the primary replica receives an update operation (either Insert or Remove) it must reply with an \mintinline{scala}!OperationAck(id)! or \mintinline{scala}!OperationFailed(id)! message, to be sent at most 1 second after the update command was processed (the \mintinline{scala}!ActorSystem!’s \mintinline{scala}!timer! resolution is deemed to be sufficiently precise for this).
 
 A positive \mintinline{scala}!OperationAck! reply must be sent as soon as
 
@@ -262,7 +262,7 @@ Snapshot("a_key", Some("value2"), seq)
 
 skipping the state where \mintinline{scala}!"a_key"! contains the value \mintinline{scala}!"value1"!.
 
-Since the replication protocol is meant to symbolize remote replication you must consider the case that either a Snapshot message or its corresponding \mintinline{scala}!SnapshotAck! message is lost on the way. Therefore the \mintinline{scala}!Replicator!  must make sure to periodically retransmit all unacknowledged changes.  For grading purposes it is assumed that this happens roughly every 100  milliseconds. To allow for batching (see above) we will assume that a  lost \mintinline{scala}!Snapshot! message will lead to a resend at most 200 milliseconds after the \mintinline{scala}!Replicate! request was received (again, the \mintinline{scala}!ActorSystem!’s scheduler service is considered precise enough for this purpose).
+Since the replication protocol is meant to symbolize remote replication you must consider the case that either a Snapshot message or its corresponding \mintinline{scala}!SnapshotAck! message is lost on the way. Therefore the \mintinline{scala}!Replicator!  must make sure to periodically retransmit all unacknowledged changes.  For grading purposes it is assumed that this happens roughly every 100  milliseconds. To allow for batching (see above) we will assume that a  lost \mintinline{scala}!Snapshot! message will lead to a resend at most 200 milliseconds after the \mintinline{scala}!Replicate! request was received (again, the \mintinline{scala}!ActorSystem!’s \mintinline{scala}!scheduler! service is considered precise enough for this purpose).
 
 \subsection{Persistence}\label{ss:persistence}
 
